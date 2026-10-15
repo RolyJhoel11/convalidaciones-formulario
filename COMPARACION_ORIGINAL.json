@@ -22,5 +22,21 @@
     "history-reader.mjs": "882cedc49d628c7be4244094aed4c34aa2f01136420fb73150e014b4f33d1732",
     "scripts/build_data.py": "37c0a6261668d8302e4f0cfc7b2def1328ab02537806e979eed7e59fe32ffb83"
   },
-  "result": "Todos los resultados académicos coinciden con el ORIGINAL suministrado."
+  "result": "Todos los resultados académicos coinciden con el ORIGINAL suministrado.",
+  "version26": {
+    "academicSourcesUnchanged": true,
+    "originalAttachmentsIdentical": true,
+    "directDownload": true,
+    "localTestsPassed": 30,
+    "browserVisualCheck": "Pendiente: el navegador de pruebas rechazó file://. No se ejecutó una descarga real de v26."
+  },
+  "version27": {
+    "academicSourcesUnchanged": true,
+    "originalAttachmentsIdentical": true,
+    "bundledOriginalPrintAssets": true,
+    "runtimeCSSOMReads": false,
+    "runtimeImageFetch": false,
+    "localTestsPassed": 34,
+    "browserVisualCheck": "Pendiente: no se ejecutó el rasterizado ni una descarga real en navegador de v27."
+  }
 }

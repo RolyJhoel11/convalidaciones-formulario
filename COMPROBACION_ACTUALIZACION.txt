@@ -1,45 +1,45 @@
-COMPROBACIÓN DE LA ACTUALIZACIÓN 25.0
+COMPROBACIÓN DE LA ACTUALIZACIÓN 27.0
 
-COMPARACIÓN CON EL ORIGINAL ADJUNTO
+ERROR CORREGIDO
+- La captura mostraba «No se pueden leer los estilos del informe. Abre el sistema
+  desde su dirección HTTPS». El mensaje procedía de leer node.sheet.cssRules.
+- El exportador ahora recibe los estilos de impresión originales desde un archivo
+  JS local. No lee hojas CSS del documento ni depende de sus permisos CSSOM.
+- Los dos logos se incorporan con los bytes PNG originales completos. Se eliminan
+  fetch y FileReader de su preparación; no hay peticiones de recursos en la captura.
+- report-assets.js se genera desde styles.css, print.css, gestion.css,
+  print-additions.css y los dos PNG, conservando el orden de las reglas.
 
-- 8.907 escenarios y 26.721 comparaciones de resultados de los tres informes:
-  coincidencia completa entre el ORIGINAL y esta versión.
-- Cobertura de las siete menciones, materias individuales de 1998 y 2023,
-  electivas pendientes, electivas ocupadas por otra equivalencia, todas las
-  elecciones de electivas, ambas menciones de origen y periodos de 64 horas.
-- 11.736 resultados rechazados por las validaciones originales también coinciden.
-- 19 funciones de cálculo idénticas: agrupación de equivalencias, requisitos,
-  electivas, orden de semestres y construcción de las tablas de los informes.
-- Los bloques de reglas de gestión, herencia y prioridad de 64 horas de
-  gestion.js coinciden literalmente con el ORIGINAL.
-- data.js, gestion-data.js, print.css, gestion.css, styles.css, history-reader.mjs
-  y scripts/build_data.py coinciden byte por byte con el ORIGINAL.
-- Recuentos y huellas SHA-256 en COMPARACION_ORIGINAL.json.
+34 PRUEBAS LOCALES COMPLETADAS
+- 19 del flujo: correo FCPN, confirmación/cancelación, apertura del formulario final,
+  prellenado, persistencia, duplicados, errores, SHA-256 y regresión del acceso CSS.
+  La prueba de regresión ejecuta ReportPdf.capture real en los tres pasos; el
+  generador de bytes PDF se simula en esta suite, como en las pruebas anteriores.
+- 3 del menú, Siguiente y conservación de la identidad fijada.
+- 5 del lector de integridad separado para Kardex.
+- 7 del exportador: nombres, recursos originales completos, preparación con acceso
+  CSS bloqueado, logos sin peticiones para rutas locales y publicadas, actualización
+  incompleta, paginación y ausencia de ventana de impresión.
+  Las medidas de tabla se simulan en la prueba de paginación.
 
-FORMATO DEL PDF
+COMPARACIÓN CON EL ÚLTIMO ORIGINAL ADJUNTO
+- 19 funciones académicas y dos bloques de gestión/64 horas idénticos al ORIGINAL.
+- 9 archivos de datos, CSS, OCR, generación de datos y logos idénticos byte por byte.
+- app.js, gestion.js, envios.js, download-ledger.js, form-links.js, envios-config.js
+  y envios.css no cambiaron respecto al ZIP v26 que adjuntó el usuario.
+- Se conserva el registro convalidaciones-descargas-v24, sin migrar ni borrar sus
+  bloqueos. El fallo previo a iniciar una descarga no registra ese informe.
+- Todos los recursos referenciados por index.html están incluidos en el paquete.
+- Los recursos incorporados coinciden con sus archivos fuente y sus SHA-256.
+- La revisión académica extensa de v25 conserva su validez para las mismas fuentes:
+  8.907 escenarios y 26.721 comparaciones con el ORIGINAL. No se repitió ese barrido
+  porque no hubo cambios en los cálculos; sí se repitió la comparación de fuentes.
 
-- Medidas de print.css: A4 horizontal, márgenes de 5 mm, tablas compactas,
-  tipografía de 6.5 pt o 5.25 pt según la clase dense original, encabezados
-  en cursiva, bordes finos, celdas combinadas y colores originales.
-- Cabecera institucional y metadatos al comienzo; cabecera de tabla repetida
-  cuando continúa en otra página. Recuento y nota final originales.
-- Correo institucional debajo de los metadatos e identificador al pie.
-- 21 PDF completos generados con el exportador real: tres tipos por siete menciones.
-- 3 PDF adicionales con pocas materias y nombre extenso, para revisar el formato
-  sin la clase dense y el ajuste de los metadatos.
-- Los 24 PDF se comprobaron por texto, acentos, correo, RU, recuento, dimensiones,
-  márgenes, metadatos e identificador de emisión en todas sus páginas.
-- Muestras de los tres tipos, páginas de continuación y datos extensos renderizadas
-  y revisadas visualmente. Se usaron Poppler y MuPDF para la revisión.
-
-FLUJO QUE YA ESTABA INCORPORADO
-
-- Las 26 pruebas de descargas, menú y lector de integridad siguen pasando.
-- Se conserva la clave de registro local de v24: actualizar el formato no borra
-  los bloqueos de descarga existentes.
-- Se conserva el formulario final con sus cinco preguntas prellenadas y los
-  tres adjuntos manuales. No se alteraron formularios ni se enviaron respuestas.
-
-La comparación académica y la interfaz se ejecutaron con DOM simulado y el
-JavaScript real de ambos ZIP. Los PDF se generaron con pdf-lib real. No se
-realizó una prueba completa con una cuenta Google y un navegador de estudiante.
+ALCANCE Y LÍMITE DE VERIFICACIÓN
+- Se corrigió y probó el acceso a recursos que causó el error mostrado.
+- No se ejecutaron el rasterizado canvas, la creación final de PDF ni la descarga
+  real en un navegador en esta revisión. No hubo comparación visual de sus páginas.
+- El navegador del entorno bloquea abrir los archivos HTML locales. No se buscaron
+  vías para eludir esa restricción. La revisión visual debe completarse en el sitio.
+- No se usaron imágenes de versiones anteriores como validación visual de esta.
+- No se enviaron respuestas, archivos ni correos de prueba a Google.

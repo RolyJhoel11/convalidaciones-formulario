@@ -1,12 +1,26 @@
-# Sistema de Convalidaciones · Versión 25.0
+# Sistema de Convalidaciones · Versión 27.0
 
 Aplicación estática para estudiantes con correo **@fcpn.edu.bo**, generación local de tres PDF y entrega en un único Google Form al final. Se conservan las equivalencias, los siete planes, las gestiones de aprobación y el lector opcional del historial académico.
 
-## Formato recuperado del ORIGINAL
+## PDF con descarga directa y vista del ORIGINAL
 
-Los tres informes usan de nuevo A4 horizontal, márgenes de 5 mm, encabezado con logotipos y línea inferior, datos del estudiante en una fila y tablas compactas con las medidas de `print.css`. Se conservan celdas combinadas, colores, títulos de los planes, recuento y nota final originales. Informe 2 conserva las dos columnas de planes que tenía en el original; los informes 1 y final conservan sus tres columnas.
+La descarga continúa siendo directa: el sistema no llama a `window.print()` ni abre el diálogo de impresión. El nuevo exportador usa la misma vista HTML de los informes, las reglas de impresión de los tres CSS originales y los archivos originales de ambos logotipos, sin reducirlos previamente.
 
-Se añade únicamente una fila para el correo institucional y el identificador de emisión al pie. Si el informe ocupa varias páginas se repite la cabecera de su tabla, como en el ORIGINAL. El formato se aplica a las nuevas descargas. Se conserva el registro local de descargas de la versión 24.
+El navegador prepara esa vista con Arial y con las medidas originales de A4 horizontal y márgenes de 5 mm. Cada página se incorpora al PDF a 300 ppp y recibe una capa de texto invisible para búsqueda y copia. Se añaden el correo y el código de emisión. No se reconstruyen las tablas mediante coordenadas y fuentes visibles de otra biblioteca.
+
+Los nombres de archivo son:
+
+- `INFORME 1 - Nombre Apellido - código.pdf`
+- `INFORME 2 - Nombre Apellido - código.pdf`
+- `INFORME FINAL - Nombre Apellido - código.pdf`
+
+El campo de correo está al lado de Mención de destino, en la última fila de los datos del estudiante. En móvil aparece después de esa mención.
+
+Se corrigió el error «No se pueden leer los estilos del informe». Los CSS de impresión y los dos PNG originales ahora vienen incorporados en `report-assets.js`. El exportador no lee `sheet.cssRules` ni descarga imágenes con `fetch`; así evita esas restricciones al abrir archivos locales o al preparar la imagen del PDF. Copia también este nuevo archivo al actualizar el sitio.
+
+La generación conserva SVG, canvas y Web Crypto. El sitio publicado debe usar HTTPS para disponer de las APIs de integridad y de un origen estable para sus registros. El código verifica los logos, evita cortar celdas combinadas y rechaza una página vacía detectada antes de iniciar la descarga.
+
+**Alcance de la revisión de esta versión:** pasaron 34 pruebas locales de código y flujo, incluida la preparación real de las tres vistas con el acceso a las hojas CSS bloqueado. La creación de bytes del PDF se simula en las pruebas de flujo y las medidas de tabla se simulan en la prueba de paginación. Se verificaron los archivos originales y los cálculos sin cambios. La captura final mediante canvas, la descarga real y la comparación visual en navegador siguen pendientes; no se afirma una coincidencia visual exacta sin esa comprobación.
 
 ## Comparación con el ORIGINAL
 
@@ -35,7 +49,7 @@ El prellenado ya tiene los identificadores reales en `envios-config.js`. Si elim
 
 ## Integridad del PDF
 
-- Identificador aleatorio de emisión en cada página y en los metadatos.
+- Identificador aleatorio de emisión al final del informe y en los metadatos.
 - PDF estático sin campos rellenables, con las tablas y los logotipos habituales.
 - SHA-256 de los bytes finales, nombre de archivo, identificador y fecha guardados en el registro local por informe.
 - Los registros corruptos o el almacenamiento bloqueado impiden iniciar otra descarga sin registro.
@@ -53,4 +67,6 @@ Los cinco datos prellenados son editables en Google. Los tres archivos se adjunt
 
 ## Pruebas locales
 
-Ejecuta `node tests/downloads.test.cjs` y `node tests/menu.test.cjs` desde esta carpeta y `node tests/reader.test.cjs` desde la carpeta hermana de Kardex. No necesitan cuentas ni envían correos o respuestas. Consulta `COMPROBACION_ACTUALIZACION.txt` para el alcance de la revisión.
+Ejecuta `node tests/downloads.test.cjs` y `node tests/menu.test.cjs` desde esta carpeta y `node tests/reader.test.cjs` desde la carpeta hermana de Kardex. No necesitan cuentas ni envían correos o respuestas. Ejecuta además `node tests/pdf-export.test.cjs` para comprobar nombres, selección de estilos y paginación. Consulta `COMPROBACION_ACTUALIZACION.txt` para el alcance de la revisión.
+
+Si en el futuro modificas los CSS o los logos de los informes, ejecuta `node tools/build-report-assets.cjs` antes de publicar. Este paso es para mantenimiento; los estudiantes solo usan la página. La prueba del exportador detecta si los recursos incorporados quedaron desactualizados.

@@ -81,7 +81,7 @@
         ledger.check(type,student);message('Preparando '+LABELS[type]+'…');
         const id=identifier(),createdAt=Date.now();snapshot.issuance={id,createdAt};
         const pdf=await window.ReportPdf.create(snapshot),sha256=await hash(pdf.bytes);
-        const fileName=LABELS[type].replace(/ /g,'_')+'_'+student.ru+'_'+id+'.pdf';
+        const fileName=pdf.fileName;
         // Persistir antes del clic. Cancelar el guardado en el navegador no puede detectarse.
         ledger.start(type,student,{id,createdAt,fileName,sha256,bytes:pdf.bytes.length,count:Number(snapshot.count)});
         try{startDownload(pdf.bytes,fileName);started=true;}

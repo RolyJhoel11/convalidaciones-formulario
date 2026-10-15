@@ -10,7 +10,8 @@
   <link rel="stylesheet" href="styles.css?v=19.1">
   <link rel="stylesheet" href="print.css?v=19.3">
   <link rel="stylesheet" href="gestion.css?v=8">
-  <link rel="stylesheet" href="envios.css?v=24.0">
+  <link rel="stylesheet" href="envios.css?v=26.0">
+  <link rel="stylesheet" href="print-additions.css?v=27.0">
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Cambiar tema" title="Cambiar tema"></button>
@@ -31,11 +32,6 @@
         <h2 id="datos-title">Prepara tu consulta</h2>
       </div>
       <div class="setup-grid">
-        <label class="institutional-email">Correo institucional (obligatorio)
-          <input id="studentEmail" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" required placeholder="usuario@fcpn.edu.bo" aria-describedby="emailHelp emailStatus">
-          <small id="emailHelp">Solo se acepta @fcpn.edu.bo. Al terminar, inicia sesión en Google con esa misma cuenta para entregar los tres informes.</small>
-        </label>
-        <p id="emailStatus" class="email-status" role="status" aria-live="polite">Descarga los tres informes. El formulario de entrega se abrirá al descargar el informe final.</p>
         <label>Apellidos y nombres
           <input id="studentName" autocomplete="name" maxlength="150" placeholder="EJ. QUISPE MAMANI ANDREA">
         </label>
@@ -50,6 +46,10 @@
         </label>
         <label>Mención de destino (obligatoria)
           <select id="careerSelect" aria-label="Mención de destino" required></select>
+        </label>
+        <label class="institutional-email">Correo institucional (obligatorio)
+          <input id="studentEmail" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" required placeholder="usuario@fcpn.edu.bo" aria-describedby="emailHelp">
+          <small id="emailHelp">Solo se acepta @fcpn.edu.bo. Al terminar, inicia sesión en Google con esa misma cuenta para entregar los tres informes.</small>
         </label>
       </div>
       <button class="history-upload-toggle" id="toggleHistoryButton" type="button" aria-expanded="false" aria-controls="historyReader">SUBIR HISTORIAL EN PDF (SI TIENE)</button>
@@ -157,6 +157,7 @@
       <img class="print-logo print-logo-informatica" src="assets/logo-informatica-transparente.png" alt="Logo de la Carrera de Informática">
     </div>
     <dl class="print-meta"><div><dt>Estudiante:</dt><dd id="printName"></dd></div><div><dt>CI:</dt><dd id="printCi"></dd></div><div><dt>RU:</dt><dd id="printRu"></dd></div><div><dt>Mención:</dt><dd id="printCareer"></dd></div><div><dt>Fecha:</dt><dd id="printDate"></dd></div></dl>
+    <dl class="print-meta print-email-meta"><div><dt>Correo:</dt><dd id="printEmail"></dd></div></dl>
     <table>
       <colgroup><col class="code-col"><col class="name-col"><col class="code-col"><col class="name-col"><col class="code-col"><col class="name-col"></colgroup>
       <thead>
@@ -171,18 +172,20 @@
     </table>
     <p class="print-count">Número de materias convalidadas: <strong id="printCount">0</strong></p>
     <p class="print-note">Documento generado por el Sistema de Convalidaciones. Será revisado y validado por la Unidad de Kardex de la Carrera de Informática.</p>
+    <p id="printEmission" class="print-emission"></p>
   </section>
 
   <script src="data.js?v=19.3"></script>
   <script src="app.js?v=24.0"></script>
   <script src="gestion-data.js?v=1"></script>
-  <script src="gestion.js?v=24.0"></script>
+  <script src="gestion.js?v=26.0"></script>
   <script src="envios-config.js?v=24.0"></script>
   <script src="form-links.js?v=24.0"></script>
   <script src="assets/vendor/pdf-lib.min.js"></script>
-  <script src="report-pdf.js?v=25.0"></script>
-  <script src="download-ledger.js?v=24.0"></script>
-  <script src="envios.js?v=24.0"></script>
+  <script src="report-assets.js?v=27.0"></script>
+  <script src="report-pdf.js?v=27.0"></script>
+  <script src="download-ledger.js?v=26.0"></script>
+  <script src="envios.js?v=26.0"></script>
   <script src="assets/vendor/tesseract.min.js"></script>
   <script type="module" src="history-reader.mjs?v=19.6"></script>
 </body>

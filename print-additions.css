@@ -1,0 +1,5 @@
+/* Solo los dos campos añadidos. print.css, gestion.css y styles.css son originales. */
+@media print{
+  .print-email-meta{grid-template-columns:minmax(0,1fr);margin-top:0}
+  .print-emission{font-size:5.5pt;margin:3px 0 0;overflow-wrap:anywhere}
+}

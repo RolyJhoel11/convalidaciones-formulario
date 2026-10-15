@@ -22,19 +22,26 @@ function environment(options={}){
   }
   const $=id=>{if(!nodes.has(id))nodes.set(id,new Element(id,/Select$/.test(id)?'select':/^student/.test(id)?'input':'button'));return nodes.get(id);};
   const main=new Element('main'),body=new Element('body');
-  const document={title:'Sistema',body,querySelector:()=>main,createElement:tag=>new Element('',tag)};
+  const document={title:'Sistema',body,querySelector:()=>main,createElement:tag=>new Element('',tag),
+    baseURI:'file:///C:/convalidaciones/index.html',getElementById:id=>id==='printView'?{cloneNode:()=>({originalView:true})}:$(id),
+    querySelectorAll(){throw new Error('SecurityError: no se pueden leer los estilos del informe');}};
   const window={addEventListener:(type,fn)=>{if(!events.has(type))events.set(type,[]);events.get(type).push(fn);},dispatchEvent:event=>{for(const fn of events.get(event.type)||[])fn(event);},confirm:()=>options.fallbackAccept!==false,
     open:()=>{log.push('open');if(options.popupBlocked)return null;const popup={closed:false,opener:{},document:{documentElement:{},body:{}},location:{replace:url=>{popup.url=url;}},close(){this.closed=true;}};popups.push(popup);return popup;}};
   window.ReportPdf={capture:(type,value)=>({type,student:{...value},count:'2'}),create:async snapshot=>{
     log.push('pdf');if(options.deferred)await new Promise(resolve=>{continuePdf=resolve;});if(options.pdfFail)throw new Error('No se pudo generar el PDF');
-    return {bytes:new Uint8Array(Buffer.from('%PDF-1.7\n'+snapshot.type+'\n'+snapshot.issuance.id+'\n%%EOF'))};
+    return {bytes:new Uint8Array(Buffer.from('%PDF-1.7\n'+snapshot.type+'\n'+snapshot.issuance.id+'\n%%EOF')),fileName:({old:'INFORME 1',modern:'INFORME 2',final:'INFORME FINAL'})[snapshot.type]+' - '+snapshot.student.name+' - '+snapshot.issuance.id+'.pdf'};
   }};
   const URLClass=class extends URL{};URLClass.createObjectURL=()=> 'blob:test';URLClass.revokeObjectURL=()=>{};
   const state={...student};for(const [field,id]of Object.entries({email:'studentEmail',name:'studentName',ci:'studentCi',ru:'studentRu',oldMention:'oldMentionSelect',career:'careerSelect'}))$(id).value=state[field];
   if(options.fallbackDialog)$('downloadConfirm').showModal=undefined;
-  const context=vm.createContext({window,document,$,state,localStorage:store,crypto:options.noCrypto?{getRandomValues:array=>webcrypto.getRandomValues(array)}:webcrypto,navigator:{locks:options.locks},URL:URLClass,Blob,Uint8Array,Intl,Date,
+  const context=vm.createContext({window,document,$,state,localStorage:store,crypto:options.noCrypto?{getRandomValues:array=>webcrypto.getRandomValues(array)}:webcrypto,navigator:{locks:options.locks},URL:URLClass,TextEncoder,Blob,Uint8Array,Intl,Date,
     OLD_MENTIONS:{sistemas_informaticos:student.oldMentionName},DATA:{sistemas:{name:student.careerName}},originalDocumentTitle:'Sistema',
     buildPrintView:()=>!options.invalidData,saveState:()=>{},render:()=>window.dispatchEvent({type:'convalidaciones:rendered'}),toast:()=>{},CustomEvent:class{constructor(type){this.type=type;}},setTimeout:()=>1});
+  if(options.localAssets){
+    const create=window.ReportPdf.create;$('printCount').textContent='2';
+    for(const file of ['report-assets.js','report-pdf.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
+    window.ReportPdf=Object.freeze({...window.ReportPdf,create});
+  }
   for(const file of ['envios-config.js','form-links.js','download-ledger.js','envios.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
   return {window,$,state,store,downloads,popups,main,log,options,continuePdf:()=>continuePdf?.(),context};
 }
@@ -72,7 +79,7 @@ function lockManager(){let pending=Promise.resolve();return {request:(_name,fn)=
     const h=environment();await attempt(h,'old');await attempt(h,'modern');
     assert.equal(h.downloads.length,2);assert.equal(h.popups.length,0);assert.equal(h.$('finalDelivery').hidden,true);
     assert.ok(h.window.ReportSubmission.isDownloaded('old'));assert.ok(h.window.ReportSubmission.isDownloaded('modern'));
-    const ledger=JSON.parse(h.store.data.get(key));for(const type of ['old','modern']){assert.match(ledger.reports[type].sha256,/^[a-f0-9]{64}$/);assert.match(ledger.reports[type].id,/^[a-f0-9-]{36}$/);}
+    const ledger=JSON.parse(h.store.data.get(key));for(const type of ['old','modern']){assert.match(ledger.reports[type].sha256,/^[a-f0-9]{64}$/);assert.match(ledger.reports[type].id,/^[a-f0-9-]{36}$/);assert.match(ledger.reports[type].fileName,/^INFORME [12] - QUISPE ÁLVAREZ & PRUEBA - [a-f0-9-]{36}\.pdf$/);}
     assert.equal(h.window.ReportSubmission.canDownload('old'),false);assert.equal(h.window.ReportSubmission.canDownload('modern'),false);
     await attempt(h,'old');await attempt(h,'modern');assert.equal(h.downloads.length,2);
   });
@@ -81,6 +88,7 @@ function lockManager(){let pending=Promise.resolve();return {request:(_name,fn)=
     await attempt(h,'old');await attempt(h,'final');assert.equal(h.popups.length,0);
     await attempt(h,'modern');await attempt(h,'final');assert.equal(h.downloads.length,3);assert.equal(h.popups.length,1);assert.equal(h.popups[0].closed,false);
     assert.equal(h.popups[0].url,h.$('openFinalForm').href);assert.equal(h.$('finalDelivery').hidden,false);assert.equal(h.$('pdfButton').disabled,true);
+    assert.match(h.downloads[2].fileName,/^INFORME FINAL - QUISPE ÁLVAREZ & PRUEBA - [a-f0-9-]{36}\.pdf$/);
     assert.equal(h.$('pdfButton').textContent,'Descargas completadas');assert.match(h.$('submissionStatus').textContent,/adjunta los tres PDF/);assert.doesNotMatch(h.$('submissionStatus').textContent,/enviado|recibido/i);
     await attempt(h,'final');assert.equal(h.downloads.length,3);assert.equal(h.popups.length,1);
   });
@@ -97,6 +105,13 @@ function lockManager(){let pending=Promise.resolve();return {request:(_name,fn)=
   await test('Error del generador no bloquea y permite reintentar',async()=>{
     const h=environment({pdfFail:true});await attempt(h,'old');assert.equal(h.window.ReportSubmission.isDownloaded('old'),false);assert.equal(h.downloads.length,0);
     h.options.pdfFail=false;await attempt(h,'old');assert.equal(h.downloads.length,1);
+  });
+  await test('Regresión CSS: captura real sin permiso de leer hojas, tres descargas y formulario final',async()=>{
+    const h=environment({localAssets:true});
+    for(const type of ['old','modern','final'])await attempt(h,type);
+    assert.equal(h.downloads.length,3);assert.equal(h.popups.length,1);assert.equal(h.popups[0].closed,false);
+    assert.equal(h.window.ReportSubmission.canDownload('final'),false);
+    assert.doesNotMatch(h.$('submissionStatus').textContent,/No se pueden leer|HTTPS/);
   });
   await test('Error del PDF final cierra la ventana pendiente y deja el final sin bloquear',async()=>{
     const h=environment();await attempt(h,'old');await attempt(h,'modern');h.options.pdfFail=true;await attempt(h,'final');

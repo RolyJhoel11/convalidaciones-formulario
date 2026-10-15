@@ -1,16 +1,12 @@
-VERSIÓN 25.0 - FORMATO ORIGINAL DE LOS PDF
+VERSIÓN 27.0 - CORRECCIÓN DE ESTILOS Y LOGOS DEL PDF
 
-- Formato de los tres PDF recuperado desde print.css y gestion.css del ORIGINAL.
-- A4 horizontal, márgenes de 5 mm, cabecera y logotipos, datos en una fila,
-  tablas compactas, columnas, celdas combinadas, colores y nota final originales.
-- Únicos campos añadidos: correo institucional y emisión al pie de cada página.
-- Al continuar en otra página se repite la cabecera de la tabla.
-- Se conserva la generación de PDF local y el flujo de confirmación/descarga.
-- Se conservan el registro de descargas de v24 y los identificadores de Forms.
-- No se editaron los datos ni las reglas académicas de app.js o gestion.js.
-- 8.907 escenarios y 26.721 comparaciones académicas coinciden con el ORIGINAL.
-- 19 funciones de cálculo y bloques de gestión/64 horas idénticos al ORIGINAL.
-- 24 PDF comprobados: siete menciones por tres informes y tres casos breves.
-
-El código de emisión identifica el PDF; no es un código enviado por correo.
-La comprobación de integridad sigue separada en la carpeta de Kardex.
+- Corrige «No se pueden leer los estilos del informe» de la captura.
+- El exportador ya no lee sheet.cssRules ni solicita logos con fetch.
+- report-assets.js incluye los CSS de impresión y los PNG originales completos.
+- Se mantiene la descarga directa; no se abre el diálogo de impresión.
+- Misma vista HTML de informes, Arial del navegador y márgenes originales.
+- Nombres: INFORME 1 / INFORME 2 / INFORME FINAL - Nombre Apellido - código.pdf.
+- Correo junto a Mención de destino; prellenado del formulario final conservado.
+- Confirmaciones, bloqueos locales existentes, identificadores y SHA-256 conservados.
+- app.js, gestion.js y los datos académicos permanecen sin cambios.
+- 34 pruebas locales pasaron. Captura y comparación visual real en navegador pendientes.
