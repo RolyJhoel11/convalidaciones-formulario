@@ -1,0 +1,45 @@
+COMPROBACIÓN DE LA ACTUALIZACIÓN 25.0
+
+COMPARACIÓN CON EL ORIGINAL ADJUNTO
+
+- 8.907 escenarios y 26.721 comparaciones de resultados de los tres informes:
+  coincidencia completa entre el ORIGINAL y esta versión.
+- Cobertura de las siete menciones, materias individuales de 1998 y 2023,
+  electivas pendientes, electivas ocupadas por otra equivalencia, todas las
+  elecciones de electivas, ambas menciones de origen y periodos de 64 horas.
+- 11.736 resultados rechazados por las validaciones originales también coinciden.
+- 19 funciones de cálculo idénticas: agrupación de equivalencias, requisitos,
+  electivas, orden de semestres y construcción de las tablas de los informes.
+- Los bloques de reglas de gestión, herencia y prioridad de 64 horas de
+  gestion.js coinciden literalmente con el ORIGINAL.
+- data.js, gestion-data.js, print.css, gestion.css, styles.css, history-reader.mjs
+  y scripts/build_data.py coinciden byte por byte con el ORIGINAL.
+- Recuentos y huellas SHA-256 en COMPARACION_ORIGINAL.json.
+
+FORMATO DEL PDF
+
+- Medidas de print.css: A4 horizontal, márgenes de 5 mm, tablas compactas,
+  tipografía de 6.5 pt o 5.25 pt según la clase dense original, encabezados
+  en cursiva, bordes finos, celdas combinadas y colores originales.
+- Cabecera institucional y metadatos al comienzo; cabecera de tabla repetida
+  cuando continúa en otra página. Recuento y nota final originales.
+- Correo institucional debajo de los metadatos e identificador al pie.
+- 21 PDF completos generados con el exportador real: tres tipos por siete menciones.
+- 3 PDF adicionales con pocas materias y nombre extenso, para revisar el formato
+  sin la clase dense y el ajuste de los metadatos.
+- Los 24 PDF se comprobaron por texto, acentos, correo, RU, recuento, dimensiones,
+  márgenes, metadatos e identificador de emisión en todas sus páginas.
+- Muestras de los tres tipos, páginas de continuación y datos extensos renderizadas
+  y revisadas visualmente. Se usaron Poppler y MuPDF para la revisión.
+
+FLUJO QUE YA ESTABA INCORPORADO
+
+- Las 26 pruebas de descargas, menú y lector de integridad siguen pasando.
+- Se conserva la clave de registro local de v24: actualizar el formato no borra
+  los bloqueos de descarga existentes.
+- Se conserva el formulario final con sus cinco preguntas prellenadas y los
+  tres adjuntos manuales. No se alteraron formularios ni se enviaron respuestas.
+
+La comparación académica y la interfaz se ejecutaron con DOM simulado y el
+JavaScript real de ambos ZIP. Los PDF se generaron con pdf-lib real. No se
+realizó una prueba completa con una cuenta Google y un navegador de estudiante.

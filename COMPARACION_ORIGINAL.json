@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-15",
+  "scenarios": 8907,
+  "reports": 26721,
+  "rejected": 11736,
+  "byCareer": {
+    "desarrollo": 1488,
+    "sistemas": 1272,
+    "computacion": 1261,
+    "ia": 1407,
+    "seguridad": 1124,
+    "redes": 1209,
+    "industrial": 1146
+  },
+  "identicalRuleFunctions": 19,
+  "identicalFilesSHA256": {
+    "data.js": "a80b98d35bfb79e247b40693b10a4d149d2f620909344fcb08380f4b41875291",
+    "gestion-data.js": "b317239b915b79f091de50b7b17fe3787070f9bb6ce44f03a9393f3fb874923e",
+    "print.css": "80ca91a27a5d5f5c8f24b7a7567f9330f756ffea82ca27ddf136df5627d863b7",
+    "gestion.css": "b44b81f35571db3e916a1fbd0906b23d475c47145de3fb6dbdb4f9beb43f6d71",
+    "styles.css": "ee4f75298884a601639be62b5939e3ae029bd648bf8b19b87748755f047ae5a1",
+    "history-reader.mjs": "882cedc49d628c7be4244094aed4c34aa2f01136420fb73150e014b4f33d1732",
+    "scripts/build_data.py": "37c0a6261668d8302e4f0cfc7b2def1328ab02537806e979eed7e59fe32ffb83"
+  },
+  "result": "Todos los resultados académicos coinciden con el ORIGINAL suministrado."
+}
