@@ -47,6 +47,28 @@
     const resolve=confirmation;if(!resolve)return;confirmation=null;
     if($('downloadConfirm').open)$('downloadConfirm').close();resolve(accepted);
   }
+  function firstReportColumns(view){
+    const table=view.querySelector('table');
+    if(!table)throw new Error('No se pudo preparar la lista de materias. Vuelve a intentar antes de descargar.');
+    // Recortar solo la copia para revisión/PDF; conservar las celdas combinadas.
+    for(const section of [table.tHead,...table.tBodies]){
+      let occupied=[];
+      for(const [index,row]of [...section.rows].entries()){
+        let column=0;
+        for(const cell of [...row.cells]){
+          while(occupied[column]>0)column++;
+          const width=cell.colSpan||1,height=cell.rowSpan===0?section.rows.length-index:cell.rowSpan||1;
+          for(let col=column;col<column+width;col++)occupied[col]=height;
+          if(column>=4)cell.remove();else if(column+width>4)cell.colSpan=4-column;
+          column+=width;
+        }
+        occupied=occupied.map(height=>Math.max(0,height-1));
+      }
+    }
+    for(const col of [...table.querySelector('colgroup').children].slice(4))col.remove();
+    view.classList.add('gestion-print');
+    view.querySelector('.print-header div > p:last-child').textContent='Plan 1998 - Plan 2023';
+  }
   function confirmReport(type,student,snapshot){
     const count=snapshot.count;
     const dialog=$('downloadConfirm'),fields=$('confirmStudentFields');fields.replaceChildren();
@@ -59,6 +81,7 @@
     for(const node of table.querySelectorAll('[id]'))node.removeAttribute('id');
     table.className='confirm-course-table';table.dataset.plans=table.querySelectorAll('col').length===4?'2':'3';$('confirmCourseTable').replaceChildren(table);
     $('confirmDownloadTitle').textContent='Revisa los datos de '+LABELS[type];$('confirmReviewed').checked=false;$('confirmDownloadButton').disabled=true;
+    $('confirmDownloadWarning').open=false;$('confirmFinalNote').open=false;
     $('confirmFinalNote').hidden=type!=='final';
     if(typeof dialog.showModal!=='function'){
       const courses=[...original.rows].map(row=>[...row.cells].map(cell=>cell.textContent.trim()).join(' | ')).join('\n');
@@ -96,7 +119,7 @@
       if(storageProblem)throw new Error(storageProblem);
       ledger.ensure();student=studentData();ledger.check(type,student);
       if(!buildPrintView(type))return;
-      snapshot=window.ReportPdf.capture(type,student);setBusy(true);
+      snapshot=window.ReportPdf.capture(type,student);if(type==='old')firstReportColumns(snapshot.view);setBusy(true);
       const confirmed=await confirmReport(type,student,snapshot);if(!confirmed)return;
       // Esta llamada sigue al clic de confirmación, antes de esperas asíncronas.
       const formUrl=type==='final'?links.build(student,config):null;

@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=19.1">
   <link rel="stylesheet" href="print.css?v=19.3">
   <link rel="stylesheet" href="gestion.css?v=8">
-  <link rel="stylesheet" href="envios.css?v=28.0">
+  <link rel="stylesheet" href="envios.css?v=29.0">
   <link rel="stylesheet" href="print-additions.css?v=27.0">
 </head>
 <body>
@@ -153,8 +153,12 @@
       </section>
     </div>
     <footer class="confirm-footer">
-      <p id="confirmDownloadWarning" class="download-warning"><strong>Revisa bien tus datos y materias antes de descargar.</strong> Debes subir este mismo PDF al formulario. Al iniciar la descarga, este informe quedará bloqueado en este navegador: no podrás corregirlo, rehacerlo ni descargarlo otra vez aquí. Guarda y conserva el archivo; cancelar el guardado no quita el bloqueo.</p>
-      <div id="confirmFinalNote" class="download-warning" hidden>
+      <details id="confirmDownloadWarning" class="download-warning">
+        <summary><strong>Revisa tus datos y materias: este PDF se descarga una sola vez.</strong> <span class="warning-more warning-toggle">Ver más</span><span class="warning-less warning-toggle">Ver menos</span></summary>
+        <p>Debes subir este mismo PDF al formulario. Al iniciar la descarga, este informe quedará bloqueado en este navegador: no podrás corregirlo, rehacerlo ni descargarlo otra vez aquí. Guarda y conserva el archivo; cancelar el guardado no quita el bloqueo.</p>
+      </details>
+      <details id="confirmFinalNote" class="download-warning" hidden>
+        <summary><strong>Entrega los tres PDF en Google Forms.</strong> <span class="warning-more warning-toggle">Ver más</span><span class="warning-less warning-toggle">Ver menos</span></summary>
         <p><strong>Entrega de los tres informes.</strong> Se abrirá Google Forms con tus datos. Adjunta cada PDF en su casilla:</p>
         <ol class="report-upload-list">
           <li><strong>Primer informe → INFORME 1.</strong></li>
@@ -162,7 +166,7 @@
           <li><strong>Informe Final → INFORME FINAL.</strong></li>
         </ol>
         <p>Después pulsa <strong>«Enviar»</strong> en Google.</p>
-      </div>
+      </details>
       <label class="confirm-reviewed"><input id="confirmReviewed" type="checkbox" aria-describedby="confirmDownloadWarning">He revisado mis datos y materias. Entiendo que debo conservar este PDF para subirlo al formulario.</label>
       <div class="confirm-actions"><button id="cancelDownloadButton" class="ghost" type="button">Volver y corregir</button><button id="confirmDownloadButton" class="primary" type="button" disabled>Sí, descargar una vez</button></div>
     </footer>
@@ -209,7 +213,7 @@
   <script src="report-assets.js?v=27.0"></script>
   <script src="report-pdf.js?v=27.0"></script>
   <script src="download-ledger.js?v=26.0"></script>
-  <script src="envios.js?v=28.0"></script>
+  <script src="envios.js?v=29.0"></script>
   <script src="assets/vendor/tesseract.min.js"></script>
   <script type="module" src="history-reader.mjs?v=19.6"></script>
 </body>

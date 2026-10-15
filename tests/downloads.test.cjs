@@ -9,7 +9,7 @@ function storage(initial){
   return {data,options:{},getItem(name){if(this.options.failRead)throw new Error('blocked');return data.get(name)||null;},setItem(name,value){if(this.options.failWrite||this.options.failRecord&&Object.keys(JSON.parse(value).reports).length)throw new Error('quota');data.set(name,value);}};
 }
 function environment(options={}){
-  const store=options.storage||storage(),nodes=new Map(),downloads=[],popups=[],events=new Map(),log=[],formClicks=[],sourceTables=[],confirmMessages=[];
+  const store=options.storage||storage(),nodes=new Map(),downloads=[],popups=[],events=new Map(),log=[],formClicks=[],sourceTables=[],confirmMessages=[],generatedViews=[];
   let continuePdf;
   class Element{
     constructor(id='',tag='div'){this.id=id;this.tag=tag;this.value='';this.textContent='';this.hidden=false;this.disabled=false;this.checked=false;this.open=false;this.dataset={};this.attrs={};this.children=[];this.listeners=new Map();}
@@ -20,13 +20,31 @@ function environment(options={}){
     showModal(){this.open=true;}close(){this.open=false;this.fire('close');}
     click(){if(this.disabled)return;if(this.id==='openFinalForm')formClicks.push(this.href);else if(this.tag==='a'&&this.download){if(options.downloadFail)throw new Error('No se pudo iniciar el guardado');downloads.push({href:this.href,fileName:this.download});}else this.fire('click');}
   }
-  function reportTable(type='old'){
+  function reportTable(type='old',model){
     const table=new Element('','table'),idNode=new Element('printPlan2023');idNode.setAttribute('id','printPlan2023');
-    table.rows=[{cells:[{textContent:'INF-111'},{textContent:'PROGRAMACIÓN I'}]},{cells:[{textContent:'INF-114'},{textContent:'ÁLGEBRA'}]}];
-    table.querySelectorAll=selector=>selector==='[id]'?[idNode]:selector==='col'?Array.from({length:type==='modern'?4:6},()=>({})):[];
-    table.cloneNode=()=>reportTable(type);return table;
+    const cell=(text,colSpan=1,rowSpan=1)=>({textContent:text,colSpan,rowSpan});
+    const plans=type==='modern'?['PÉNSUM 2023','PÉNSUM 2023 AJUSTADO']:['PÉNSUM 1998','PÉNSUM 2023','PÉNSUM 2023 AJUSTADO'];
+    const section=data=>({rows:data.map(cells=>{
+      const row={cells:cells.map(value=>({...value}))};
+      for(const item of row.cells)Object.defineProperty(item,'remove',{value:()=>row.cells.splice(row.cells.indexOf(item),1)});
+      return row;
+    })});
+    const first=[cell('INF-111'),cell('INTRODUCCIÓN A LA INFORMÁTICA'),cell('INF-111',1,2),cell('PROGRAMACIÓN I',1,2),cell('INF-111',1,2),cell('PROGRAMACIÓN I',1,2)];
+    const second=[cell('INF-114'),cell('ÁLGEBRA'),cell('INF-114'),cell('ÁLGEBRA'),cell('INF-114'),cell('ÁLGEBRA')];
+    const header=model?.header||[plans.map(text=>cell(text,2)),plans.flatMap(()=>[cell('SIGLA'),cell('ASIGNATURA')])];
+    const body=model?.body||[plans.map(()=>cell('1.º SEMESTRE',2)),...(type==='modern'?[first.slice(2,6)]:[first,[cell('LAB-111'),cell('LABORATORIO DE INF-111')]]),type==='modern'?second.slice(2):second];
+    table.tHead=section(header);table.tBodies=[section(body)];
+    const colgroup={children:Array.from({length:model?.columns??plans.length*2},()=>({}))};
+    for(const col of colgroup.children)col.remove=()=>colgroup.children.splice(colgroup.children.indexOf(col),1);
+    Object.defineProperty(table,'rows',{get:()=>[...table.tHead.rows,...table.tBodies[0].rows]});
+    table.querySelector=selector=>selector==='colgroup'?colgroup:null;
+    table.querySelectorAll=selector=>selector==='[id]'?[idNode]:selector==='col'?colgroup.children:[];
+    table.cloneNode=()=>reportTable(type,{columns:colgroup.children.length,header:table.tHead.rows.map(row=>row.cells),body:table.tBodies[0].rows.map(row=>row.cells)});return table;
   }
-  function reportView(type){const table=reportTable(type);sourceTables.push(table);return {querySelector:selector=>selector==='table'&&!options.missingPreview?table:null};}
+  function reportView(type){
+    const table=reportTable(type),subtitle={textContent:type==='old'?'Plan 1998 - Plan 2023 - Plan 2023 ajustado':'Otro informe'},classes=new Set();sourceTables.push(table);
+    return {classList:{add:name=>classes.add(name),contains:name=>classes.has(name)},querySelector:selector=>selector==='table'?options.missingPreview?null:table:selector==='.print-header div > p:last-child'?subtitle:null};
+  }
   const $=id=>{if(!nodes.has(id))nodes.set(id,new Element(id,/Select$/.test(id)?'select':/^student/.test(id)?'input':'button'));return nodes.get(id);};
   const main=new Element('main'),body=new Element('body');
   const document={title:'Sistema',body,querySelector:()=>main,createElement:tag=>new Element('',tag),
@@ -35,7 +53,7 @@ function environment(options={}){
   const window={addEventListener:(type,fn)=>{if(!events.has(type))events.set(type,[]);events.get(type).push(fn);},dispatchEvent:event=>{for(const fn of events.get(event.type)||[])fn(event);},confirm:text=>{confirmMessages.push(text);return options.fallbackAccept!==false;},
     open:()=>{log.push('open');if(options.popupBlocked)return null;const popup={closed:false,opener:{},document:{documentElement:{},body:{}},location:{replace:url=>{popup.url=url;}},close(){this.closed=true;}};popups.push(popup);return popup;}};
   window.ReportPdf={capture:(type,value)=>({type,student:{...value},count:'2',view:reportView(type)}),create:async snapshot=>{
-    log.push('pdf');if(options.deferred)await new Promise(resolve=>{continuePdf=resolve;});if(options.pdfFail)throw new Error('No se pudo generar el PDF');
+    log.push('pdf');generatedViews.push(snapshot.view);if(options.deferred)await new Promise(resolve=>{continuePdf=resolve;});if(options.pdfFail)throw new Error('No se pudo generar el PDF');
     return {bytes:new Uint8Array(Buffer.from('%PDF-1.7\n'+snapshot.type+'\n'+snapshot.issuance.id+'\n%%EOF')),fileName:({old:'INFORME 1',modern:'INFORME 2',final:'INFORME FINAL'})[snapshot.type]+' - '+snapshot.student.name+' - '+snapshot.issuance.id+'.pdf'};
   }};
   const URLClass=class extends URL{};URLClass.createObjectURL=()=> 'blob:test';URLClass.revokeObjectURL=()=>{};
@@ -50,7 +68,7 @@ function environment(options={}){
     window.ReportPdf=Object.freeze({...window.ReportPdf,create});
   }
   for(const file of ['envios-config.js','form-links.js','download-ledger.js','envios.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
-  return {window,$,state,store,downloads,popups,main,log,options,formClicks,sourceTables,confirmMessages,continuePdf:()=>continuePdf?.(),context};
+  return {window,$,state,store,downloads,popups,main,log,options,formClicks,sourceTables,confirmMessages,generatedViews,continuePdf:()=>continuePdf?.(),context};
 }
 async function attempt(h,type,accept=true){const promise=h.window.ReportSubmission.submit(type);if(h.$('downloadConfirm').open){if(accept){h.$('confirmReviewed').checked=true;h.$('confirmReviewed').fire('change');h.$('confirmDownloadButton').click();}else h.$('cancelDownloadButton').click();}await promise;}
 const nextTick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -117,13 +135,26 @@ function lockManager(){let pending=Promise.resolve();return {request:(_name,fn)=
   await test('Los tres informes muestran la tabla exacta de su captura y reinician la revisión sin modificar el PDF',async()=>{
     const h=environment();
     for(const type of ['old','modern','final']){
-      h.$('confirmScroll').scrollTop=400;h.$('confirmReviewed').checked=true;
+      h.$('confirmScroll').scrollTop=400;h.$('confirmReviewed').checked=true;h.$('confirmDownloadWarning').open=true;h.$('confirmFinalNote').open=true;
       const promise=h.window.ReportSubmission.submit(type),table=h.$('confirmCourseTable').children[0],original=h.sourceTables.at(-1);
       assert.ok(table);assert.notEqual(table,original);assert.deepEqual(table.rows,original.rows);
       assert.equal(original.querySelectorAll('[id]')[0].attrs.id,'printPlan2023');assert.equal(table.querySelectorAll('[id]')[0].attrs.id,undefined);
-      assert.equal(table.dataset.plans,type==='modern'?'2':'3');assert.equal(h.$('confirmFinalNote').hidden,type!=='final');
+      assert.equal(table.dataset.plans,type==='final'?'3':'2');assert.equal(h.$('confirmFinalNote').hidden,type!=='final');
+      assert.equal(h.$('confirmDownloadWarning').open,false);assert.equal(h.$('confirmFinalNote').open,false);
+      assert.equal(original.querySelectorAll('col').length,type==='final'?6:4);
+      const titles=original.tHead.rows[0].cells.map(cell=>cell.textContent);
+      assert.deepEqual(titles,type==='old'?['PÉNSUM 1998','PÉNSUM 2023']:type==='modern'?['PÉNSUM 2023','PÉNSUM 2023 AJUSTADO']:['PÉNSUM 1998','PÉNSUM 2023','PÉNSUM 2023 AJUSTADO']);
+      if(type==='old'){
+        assert.deepEqual(original.tBodies[0].rows.map(row=>row.cells.length),[2,4,2,4]);
+        assert.equal(original.tBodies[0].rows[1].cells[2].rowSpan,2);assert.equal(original.tBodies[0].rows[1].cells[3].rowSpan,2);
+      }
       assert.equal(h.$('confirmScroll').scrollTop,0);assert.equal(h.$('confirmReviewed').checked,false);assert.equal(h.$('confirmDownloadButton').disabled,true);
       h.$('confirmReviewed').checked=true;h.$('confirmReviewed').fire('change');h.$('confirmDownloadButton').click();await promise;
+      assert.deepEqual(h.generatedViews.at(-1).querySelector('table').rows,table.rows);
+      if(type==='old'){
+        assert.equal(h.generatedViews.at(-1).classList.contains('gestion-print'),true);
+        assert.equal(h.generatedViews.at(-1).querySelector('.print-header div > p:last-child').textContent,'Plan 1998 - Plan 2023');
+      }
     }
     assert.equal(h.downloads.length,3);
   });
