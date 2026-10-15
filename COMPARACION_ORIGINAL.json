@@ -38,5 +38,13 @@
     "runtimeImageFetch": false,
     "localTestsPassed": 34,
     "browserVisualCheck": "Pendiente: no se ejecutó el rasterizado ni una descarga real en navegador de v27."
+  },
+  "version28": {
+    "academicSourcesUnchanged": true,
+    "pdfGeneratorAndAssetsUnchangedFromV27": true,
+    "previewUsesSnapshotTable": true,
+    "finalFormCanReopenWithoutNewDownload": true,
+    "localTestsPassed": 32,
+    "browserVisualCheck": "No ejecutada en este entorno."
   }
 }

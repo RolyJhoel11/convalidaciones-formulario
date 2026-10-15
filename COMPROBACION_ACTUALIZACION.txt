@@ -1,45 +1,45 @@
-COMPROBACIÓN DE LA ACTUALIZACIÓN 27.0
+COMPROBACIÓN DE LA ACTUALIZACIÓN 28.0
 
-ERROR CORREGIDO
-- La captura mostraba «No se pueden leer los estilos del informe. Abre el sistema
-  desde su dirección HTTPS». El mensaje procedía de leer node.sheet.cssRules.
-- El exportador ahora recibe los estilos de impresión originales desde un archivo
-  JS local. No lee hojas CSS del documento ni depende de sus permisos CSSOM.
-- Los dos logos se incorporan con los bytes PNG originales completos. Se eliminan
-  fetch y FileReader de su preparación; no hay peticiones de recursos en la captura.
-- report-assets.js se genera desde styles.css, print.css, gestion.css,
-  print-additions.css y los dos PNG, conservando el orden de las reglas.
+CAMBIOS
+- La confirmación de los tres tipos de informe incluye una copia de la tabla de la
+  misma captura que recibe el generador PDF. No se recalculan equivalencias para
+  esta revisión ni se modifica la captura original al quitar IDs de la copia.
+- Datos y tabla se desplazan en un panel; advertencias y controles quedan en el pie.
+  El pie tiene desplazamiento propio en pantallas de poca altura.
+- Se explica que se debe revisar todo y conservar ese PDF para subirlo al formulario;
+  al iniciar la descarga no se podrá rehacer ese informe en este navegador.
+- La casilla se reinicia para cada informe; confirmar sigue siendo obligatorio.
+- Las instrucciones del final y la sección de entrega relacionan las tres casillas
+  del formulario con INFORME 1, INFORME 2 e INFORME FINAL.
+- El menú final descargado y el botón principal abren el formulario. No pasan por
+  submit, no generan otro PDF y no modifican el registro de descargas.
+- La acción se conserva al recargar y al volver al paso 1. Google decide si muestra
+  que la cuenta ya respondió, de acuerdo con la configuración del formulario.
 
-34 PRUEBAS LOCALES COMPLETADAS
-- 19 del flujo: correo FCPN, confirmación/cancelación, apertura del formulario final,
-  prellenado, persistencia, duplicados, errores, SHA-256 y regresión del acceso CSS.
-  La prueba de regresión ejecuta ReportPdf.capture real en los tres pasos; el
-  generador de bytes PDF se simula en esta suite, como en las pruebas anteriores.
-- 3 del menú, Siguiente y conservación de la identidad fijada.
-- 5 del lector de integridad separado para Kardex.
-- 7 del exportador: nombres, recursos originales completos, preparación con acceso
-  CSS bloqueado, logos sin peticiones para rutas locales y publicadas, actualización
-  incompleta, paginación y ausencia de ventana de impresión.
-  Las medidas de tabla se simulan en la prueba de paginación.
+32 PRUEBAS LOCALES COMPLETADAS
+- 22 del flujo: confirmación/cancelación, copia independiente de la tabla en los
+  tres informes, reinicio de revisión, ausencia de tabla, prellenado, reapertura
+  repetida y tras recarga sin otra descarga ni cambios en el registro, errores,
+  persistencia, integridad y bloqueo de duplicados.
+- 3 del menú e identidad: se ejecuta gestion.js real. Se prueban el final habilitado
+  para abrir Forms, el botón principal en ambos pasos y las descargas bloqueadas.
+- 7 del exportador conservado: recursos originales, regresión CSS, logos, nombres,
+  paginación y descarga directa sin ventana de impresión.
+- En las pruebas de flujo se simula la generación de bytes PDF; la prueba de
+  paginación usa medidas simuladas. No se afirma una prueba visual de navegador.
 
-COMPARACIÓN CON EL ÚLTIMO ORIGINAL ADJUNTO
-- 19 funciones académicas y dos bloques de gestión/64 horas idénticos al ORIGINAL.
-- 9 archivos de datos, CSS, OCR, generación de datos y logos idénticos byte por byte.
-- app.js, gestion.js, envios.js, download-ledger.js, form-links.js, envios-config.js
-  y envios.css no cambiaron respecto al ZIP v26 que adjuntó el usuario.
-- Se conserva el registro convalidaciones-descargas-v24, sin migrar ni borrar sus
-  bloqueos. El fallo previo a iniciar una descarga no registra ese informe.
-- Todos los recursos referenciados por index.html están incluidos en el paquete.
-- Los recursos incorporados coinciden con sus archivos fuente y sus SHA-256.
-- La revisión académica extensa de v25 conserva su validez para las mismas fuentes:
-  8.907 escenarios y 26.721 comparaciones con el ORIGINAL. No se repitió ese barrido
-  porque no hubo cambios en los cálculos; sí se repitió la comparación de fuentes.
+FUENTES CONSERVADAS
+- 15 archivos del PDF, datos, reglas, persistencia, cuenta FCPN y logos permanecen
+  idénticos a v27: app.js, data.js, gestion-data.js, styles.css, print.css, gestion.css,
+  print-additions.css, report-assets.js, report-pdf.js, download-ledger.js,
+  form-links.js, envios-config.js, history-reader.mjs y ambos PNG originales.
+- La vista HTML printView es idéntica a v27. No se alteró el formato de los PDF.
+- Los bloques de cálculos de gestion.js anteriores a const matrix y desde
+  const printTable hasta el final siguen idénticos a v27 y al ORIGINAL.
+- Se conserva la clave convalidaciones-descargas-v24 y no se borran registros.
+- Todos los recursos referenciados por index.html están incluidos.
 
-ALCANCE Y LÍMITE DE VERIFICACIÓN
-- Se corrigió y probó el acceso a recursos que causó el error mostrado.
-- No se ejecutaron el rasterizado canvas, la creación final de PDF ni la descarga
-  real en un navegador en esta revisión. No hubo comparación visual de sus páginas.
-- El navegador del entorno bloquea abrir los archivos HTML locales. No se buscaron
-  vías para eludir esa restricción. La revisión visual debe completarse en el sitio.
-- No se usaron imágenes de versiones anteriores como validación visual de esta.
-- No se enviaron respuestas, archivos ni correos de prueba a Google.
+LÍMITES
+- No hubo revisión visual de la interfaz ni descarga real en navegador en este
+  entorno. El generador PDF y sus recursos no se cambiaron en esta actualización.
+- No se enviaron formularios, archivos ni correos de prueba.

@@ -1,12 +1,11 @@
-VERSIÓN 27.0 - CORRECCIÓN DE ESTILOS Y LOGOS DEL PDF
+VERSIÓN 28.0 - REVISIÓN DE MATERIAS Y REAPERTURA DEL FORMULARIO
 
-- Corrige «No se pueden leer los estilos del informe» de la captura.
-- El exportador ya no lee sheet.cssRules ni solicita logos con fetch.
-- report-assets.js incluye los CSS de impresión y los PNG originales completos.
-- Se mantiene la descarga directa; no se abre el diálogo de impresión.
-- Misma vista HTML de informes, Arial del navegador y márgenes originales.
-- Nombres: INFORME 1 / INFORME 2 / INFORME FINAL - Nombre Apellido - código.pdf.
-- Correo junto a Mención de destino; prellenado del formulario final conservado.
-- Confirmaciones, bloqueos locales existentes, identificadores y SHA-256 conservados.
-- app.js, gestion.js y los datos académicos permanecen sin cambios.
-- 34 pruebas locales pasaron. Captura y comparación visual real en navegador pendientes.
+- Los tres informes muestran su tabla de materias antes de confirmar la descarga.
+- La advertencia naranja, la casilla y los botones quedan en el pie de la revisión.
+- Aviso para revisar, conservar el archivo y subir ese mismo PDF al formulario.
+- Se requiere marcar la casilla y confirmar; cancelar permite volver y corregir.
+- Instrucciones para adjuntar INFORME 1, INFORME 2 e INFORME FINAL en sus casillas.
+- El final descargado y el botón principal permiten reabrir Google Forms.
+- Reabrir no genera PDF, no quita bloqueos y funciona después de recargar la página.
+- Se conservan el generador y formato del PDF de v27, los cálculos y los registros.
+- 32 pruebas locales pasaron. No hubo revisión visual en un navegador real.

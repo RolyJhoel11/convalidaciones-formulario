@@ -1,6 +1,16 @@
-# Sistema de Convalidaciones · Versión 27.0
+# Sistema de Convalidaciones · Versión 28.0
 
 Aplicación estática para estudiantes con correo **@fcpn.edu.bo**, generación local de tres PDF y entrega en un único Google Form al final. Se conservan las equivalencias, los siete planes, las gestiones de aprobación y el lector opcional del historial académico.
+
+## Revisión de materias antes de descargar
+
+Los tres informes muestran sus datos y, debajo del total de materias convalidadas, la misma tabla que se incluirá en el PDF. Puedes desplazarte para leer las asignaturas y sus equivalencias. La advertencia naranja, la casilla de aceptación y los botones están en el pie de la ventana; en pantallas de muy poca altura ese pie también permite desplazarse para mantener accesibles sus controles.
+
+Revisa todo antes de confirmar. El aviso explica que debes conservar ese mismo PDF para entregarlo y que no podrás corregirlo, rehacerlo ni volver a descargar ese informe en este navegador. Marca la casilla para habilitar **Sí, descargar una vez**, o usa **Volver y corregir**. La revisión se reinicia para cada informe.
+
+En el informe final, tanto la confirmación como la sección de entrega indican qué PDF adjuntar en cada pregunta: **Primer informe → INFORME 1**, **Segundo informe → INFORME 2**, **Informe Final → INFORME FINAL**. Después se pulsa **Enviar** en Google.
+
+Al descargar el final, su opción del menú y el botón principal cambian a **Abrir formulario de entrega**. Puedes reabrirlo si cerraste la pestaña, incluso después de recargar el sistema o volver al paso 1. Esta acción conserva los datos prellenados y no genera otro PDF ni cambia el registro de descargas. Google indica si ya respondiste según la restricción de una respuesta configurada por el propietario.
 
 ## PDF con descarga directa y vista del ORIGINAL
 
@@ -20,7 +30,7 @@ Se corrigió el error «No se pueden leer los estilos del informe». Los CSS de 
 
 La generación conserva SVG, canvas y Web Crypto. El sitio publicado debe usar HTTPS para disponer de las APIs de integridad y de un origen estable para sus registros. El código verifica los logos, evita cortar celdas combinadas y rechaza una página vacía detectada antes de iniciar la descarga.
 
-**Alcance de la revisión de esta versión:** pasaron 34 pruebas locales de código y flujo, incluida la preparación real de las tres vistas con el acceso a las hojas CSS bloqueado. La creación de bytes del PDF se simula en las pruebas de flujo y las medidas de tabla se simulan en la prueba de paginación. Se verificaron los archivos originales y los cálculos sin cambios. La captura final mediante canvas, la descarga real y la comparación visual en navegador siguen pendientes; no se afirma una coincidencia visual exacta sin esa comprobación.
+**Alcance de la revisión de esta versión:** pasaron 32 pruebas locales de flujo, menú y exportador. Incluyen la tabla de revisión en los tres informes, su independencia de la captura para el PDF, el reinicio de la casilla y la reapertura del formulario sin nuevas descargas. La creación de bytes del PDF se simula en las pruebas de flujo y las medidas de tabla se simulan en la prueba de paginación. El generador, los recursos y la vista HTML del PDF permanecen idénticos a v27. No hubo comprobación visual de esta interfaz en un navegador real en este entorno.
 
 ## Comparación con el ORIGINAL
 
@@ -35,7 +45,7 @@ Para repetir la comparación, descomprime el ORIGINAL en otra carpeta y ejecuta 
 3. Pulsa Siguiente, completa el plan 2023 y descarga el Informe 2 con la misma confirmación.
 4. Después descarga el INFORME FINAL. Se abre el formulario con los cinco datos ya preparados; adjunta los tres PDF y pulsa Enviar en Google.
 
-Cada informe se puede descargar una vez en este navegador. El menú muestra el informe descargado deshabilitado y atenuado. Al descargar Informe 1 también se deshabilita el botón principal en el primer paso; Siguiente permite continuar con el segundo. Cancelar la confirmación permite corregir los datos. Se fijan los datos de identidad y menciones al iniciar la primera descarga.
+Cada informe se puede descargar una vez en este navegador. Los informes 1 y 2 descargados se muestran deshabilitados y atenuados; el final descargado cambia a una acción para abrir el formulario. Al descargar Informe 1 se deshabilita el botón principal en el primer paso; Siguiente permite continuar con el segundo. Una vez descargado el final, el botón principal permite reabrir el formulario desde cualquier paso. Cancelar la confirmación permite corregir los datos. Se fijan los datos de identidad y menciones al iniciar la primera descarga.
 
 El bloqueo se guarda **al iniciar la descarga**. La página no puede detectar si el navegador terminó de guardar el PDF o si el usuario canceló. No hay botón de descarga repetida. El enlace de entrega se conserva para volver a abrir Forms tras el informe final.
 

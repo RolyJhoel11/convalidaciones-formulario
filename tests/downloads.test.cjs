@@ -9,25 +9,32 @@ function storage(initial){
   return {data,options:{},getItem(name){if(this.options.failRead)throw new Error('blocked');return data.get(name)||null;},setItem(name,value){if(this.options.failWrite||this.options.failRecord&&Object.keys(JSON.parse(value).reports).length)throw new Error('quota');data.set(name,value);}};
 }
 function environment(options={}){
-  const store=options.storage||storage(),nodes=new Map(),downloads=[],popups=[],events=new Map(),log=[];
+  const store=options.storage||storage(),nodes=new Map(),downloads=[],popups=[],events=new Map(),log=[],formClicks=[],sourceTables=[],confirmMessages=[];
   let continuePdf;
   class Element{
     constructor(id='',tag='div'){this.id=id;this.tag=tag;this.value='';this.textContent='';this.hidden=false;this.disabled=false;this.checked=false;this.open=false;this.dataset={};this.attrs={};this.children=[];this.listeners=new Map();}
     addEventListener(name,fn){if(!this.listeners.has(name))this.listeners.set(name,[]);this.listeners.get(name).push(fn);}
     fire(name,event={}){for(const fn of this.listeners.get(name)||[])fn(event);}
-    setAttribute(k,v){this.attrs[k]=v;}setCustomValidity(value){this.validity=value;}reportValidity(){this.reported=true;}focus(){this.focused=true;}
-    replaceChildren(){this.children=[];}append(...values){this.children.push(...values);}remove(){}
+    setAttribute(k,v){this.attrs[k]=v;}removeAttribute(k){delete this.attrs[k];}setCustomValidity(value){this.validity=value;}reportValidity(){this.reported=true;}focus(){this.focused=true;}
+    replaceChildren(...values){this.children=[...values];}append(...values){this.children.push(...values);}remove(){}
     showModal(){this.open=true;}close(){this.open=false;this.fire('close');}
-    click(){if(this.disabled)return;if(this.tag==='a'&&this.download){if(options.downloadFail)throw new Error('No se pudo iniciar el guardado');downloads.push({href:this.href,fileName:this.download});}else this.fire('click');}
+    click(){if(this.disabled)return;if(this.id==='openFinalForm')formClicks.push(this.href);else if(this.tag==='a'&&this.download){if(options.downloadFail)throw new Error('No se pudo iniciar el guardado');downloads.push({href:this.href,fileName:this.download});}else this.fire('click');}
   }
+  function reportTable(type='old'){
+    const table=new Element('','table'),idNode=new Element('printPlan2023');idNode.setAttribute('id','printPlan2023');
+    table.rows=[{cells:[{textContent:'INF-111'},{textContent:'PROGRAMACIÓN I'}]},{cells:[{textContent:'INF-114'},{textContent:'ÁLGEBRA'}]}];
+    table.querySelectorAll=selector=>selector==='[id]'?[idNode]:selector==='col'?Array.from({length:type==='modern'?4:6},()=>({})):[];
+    table.cloneNode=()=>reportTable(type);return table;
+  }
+  function reportView(type){const table=reportTable(type);sourceTables.push(table);return {querySelector:selector=>selector==='table'&&!options.missingPreview?table:null};}
   const $=id=>{if(!nodes.has(id))nodes.set(id,new Element(id,/Select$/.test(id)?'select':/^student/.test(id)?'input':'button'));return nodes.get(id);};
   const main=new Element('main'),body=new Element('body');
   const document={title:'Sistema',body,querySelector:()=>main,createElement:tag=>new Element('',tag),
-    baseURI:'file:///C:/convalidaciones/index.html',getElementById:id=>id==='printView'?{cloneNode:()=>({originalView:true})}:$(id),
+    baseURI:'file:///C:/convalidaciones/index.html',getElementById:id=>id==='printView'?{cloneNode:()=>reportView('old')}:$(id),
     querySelectorAll(){throw new Error('SecurityError: no se pueden leer los estilos del informe');}};
-  const window={addEventListener:(type,fn)=>{if(!events.has(type))events.set(type,[]);events.get(type).push(fn);},dispatchEvent:event=>{for(const fn of events.get(event.type)||[])fn(event);},confirm:()=>options.fallbackAccept!==false,
+  const window={addEventListener:(type,fn)=>{if(!events.has(type))events.set(type,[]);events.get(type).push(fn);},dispatchEvent:event=>{for(const fn of events.get(event.type)||[])fn(event);},confirm:text=>{confirmMessages.push(text);return options.fallbackAccept!==false;},
     open:()=>{log.push('open');if(options.popupBlocked)return null;const popup={closed:false,opener:{},document:{documentElement:{},body:{}},location:{replace:url=>{popup.url=url;}},close(){this.closed=true;}};popups.push(popup);return popup;}};
-  window.ReportPdf={capture:(type,value)=>({type,student:{...value},count:'2'}),create:async snapshot=>{
+  window.ReportPdf={capture:(type,value)=>({type,student:{...value},count:'2',view:reportView(type)}),create:async snapshot=>{
     log.push('pdf');if(options.deferred)await new Promise(resolve=>{continuePdf=resolve;});if(options.pdfFail)throw new Error('No se pudo generar el PDF');
     return {bytes:new Uint8Array(Buffer.from('%PDF-1.7\n'+snapshot.type+'\n'+snapshot.issuance.id+'\n%%EOF')),fileName:({old:'INFORME 1',modern:'INFORME 2',final:'INFORME FINAL'})[snapshot.type]+' - '+snapshot.student.name+' - '+snapshot.issuance.id+'.pdf'};
   }};
@@ -43,7 +50,7 @@ function environment(options={}){
     window.ReportPdf=Object.freeze({...window.ReportPdf,create});
   }
   for(const file of ['envios-config.js','form-links.js','download-ledger.js','envios.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
-  return {window,$,state,store,downloads,popups,main,log,options,continuePdf:()=>continuePdf?.(),context};
+  return {window,$,state,store,downloads,popups,main,log,options,formClicks,sourceTables,confirmMessages,continuePdf:()=>continuePdf?.(),context};
 }
 async function attempt(h,type,accept=true){const promise=h.window.ReportSubmission.submit(type);if(h.$('downloadConfirm').open){if(accept){h.$('confirmReviewed').checked=true;h.$('confirmReviewed').fire('change');h.$('confirmDownloadButton').click();}else h.$('cancelDownloadButton').click();}await promise;}
 const nextTick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -87,15 +94,41 @@ function lockManager(){let pending=Promise.resolve();return {request:(_name,fn)=
     const h=environment();await attempt(h,'final');assert.equal(h.log.length,0);assert.match(h.$('submissionStatus').textContent,/primero/);
     await attempt(h,'old');await attempt(h,'final');assert.equal(h.popups.length,0);
     await attempt(h,'modern');await attempt(h,'final');assert.equal(h.downloads.length,3);assert.equal(h.popups.length,1);assert.equal(h.popups[0].closed,false);
-    assert.equal(h.popups[0].url,h.$('openFinalForm').href);assert.equal(h.$('finalDelivery').hidden,false);assert.equal(h.$('pdfButton').disabled,true);
+    assert.equal(h.popups[0].url,h.$('openFinalForm').href);assert.equal(h.$('finalDelivery').hidden,false);assert.equal(h.$('pdfButton').disabled,false);
     assert.match(h.downloads[2].fileName,/^INFORME FINAL - QUISPE ÁLVAREZ & PRUEBA - [a-f0-9-]{36}\.pdf$/);
-    assert.equal(h.$('pdfButton').textContent,'Descargas completadas');assert.match(h.$('submissionStatus').textContent,/adjunta los tres PDF/);assert.doesNotMatch(h.$('submissionStatus').textContent,/enviado|recibido/i);
+    assert.equal(h.$('pdfButton').textContent,'Abrir formulario de entrega');assert.match(h.$('submissionStatus').textContent,/adjunta los tres PDF/);assert.doesNotMatch(h.$('submissionStatus').textContent,/enviado|recibido/i);
     await attempt(h,'final');assert.equal(h.downloads.length,3);assert.equal(h.popups.length,1);
   });
   await test('Se puede volver a abrir Forms sin volver a descargar; ventanas bloqueadas no pierden el enlace',async()=>{
     const h=environment({popupBlocked:true});for(const type of ['old','modern','final'])await attempt(h,type);
     assert.equal(h.downloads.length,3);assert.equal(h.popups.length,0);assert.match(h.$('openFinalForm').href,/entry\.1422839057=/);assert.match(h.$('submissionStatus').textContent,/Abrir formulario de entrega/);
-    const loaded=environment({storage:h.store});assert.equal(loaded.$('finalDelivery').hidden,false);assert.equal(loaded.$('openFinalForm').href,h.$('openFinalForm').href);assert.equal(loaded.$('pdfButton').disabled,true);assert.equal(loaded.downloads.length,0);
+    const loaded=environment({storage:h.store});assert.equal(loaded.$('finalDelivery').hidden,false);assert.equal(loaded.$('openFinalForm').href,h.$('openFinalForm').href);assert.equal(loaded.$('pdfButton').disabled,false);assert.equal(loaded.downloads.length,0);
+  });
+  await test('Reabrir Forms después del final y de recargar no genera PDF ni cambia el registro',async()=>{
+    const h=environment();assert.equal(h.window.ReportSubmission.openFinalForm(),false);
+    for(const type of ['old','modern','final'])await attempt(h,type);
+    const saved=h.store.data.get(key),generated=h.log.filter(value=>value==='pdf').length;
+    for(let i=0;i<3;i++)assert.equal(h.window.ReportSubmission.openFinalForm(),true);
+    assert.equal(h.formClicks.length,3);assert.ok(h.formClicks.every(url=>url===h.$('openFinalForm').href));
+    assert.equal(h.downloads.length,3);assert.equal(h.log.filter(value=>value==='pdf').length,generated);assert.equal(h.store.data.get(key),saved);
+    const loaded=environment({storage:h.store});assert.equal(loaded.window.ReportSubmission.canOpenFinalForm(),true);assert.equal(loaded.window.ReportSubmission.openFinalForm(),true);
+    assert.equal(loaded.formClicks.length,1);assert.equal(loaded.downloads.length,0);assert.equal(loaded.store.data.get(key),saved);
+  });
+  await test('Los tres informes muestran la tabla exacta de su captura y reinician la revisión sin modificar el PDF',async()=>{
+    const h=environment();
+    for(const type of ['old','modern','final']){
+      h.$('confirmScroll').scrollTop=400;h.$('confirmReviewed').checked=true;
+      const promise=h.window.ReportSubmission.submit(type),table=h.$('confirmCourseTable').children[0],original=h.sourceTables.at(-1);
+      assert.ok(table);assert.notEqual(table,original);assert.deepEqual(table.rows,original.rows);
+      assert.equal(original.querySelectorAll('[id]')[0].attrs.id,'printPlan2023');assert.equal(table.querySelectorAll('[id]')[0].attrs.id,undefined);
+      assert.equal(table.dataset.plans,type==='modern'?'2':'3');assert.equal(h.$('confirmFinalNote').hidden,type!=='final');
+      assert.equal(h.$('confirmScroll').scrollTop,0);assert.equal(h.$('confirmReviewed').checked,false);assert.equal(h.$('confirmDownloadButton').disabled,true);
+      h.$('confirmReviewed').checked=true;h.$('confirmReviewed').fire('change');h.$('confirmDownloadButton').click();await promise;
+    }
+    assert.equal(h.downloads.length,3);
+  });
+  await test('Si no se puede mostrar la revisión, no descarga ni bloquea el informe',async()=>{
+    const h=environment({missingPreview:true});await attempt(h,'old');assert.equal(h.downloads.length,0);assert.equal(h.window.ReportSubmission.isDownloaded('old'),false);assert.match(h.$('submissionStatus').textContent,/lista de materias/);
   });
   await test('Recargar conserva bloqueos y los datos fijados del estudiante',async()=>{
     const h=environment();await attempt(h,'old');const loaded=environment({storage:h.store});
@@ -144,11 +177,13 @@ function lockManager(){let pending=Promise.resolve();return {request:(_name,fn)=
   });
   await test('Compatibilidad sin dialog conserva la confirmación y permite cancelar',async()=>{
     const h=environment({fallbackDialog:true,fallbackAccept:false});await attempt(h,'old');assert.equal(h.downloads.length,0);h.options.fallbackAccept=true;await attempt(h,'old');assert.equal(h.downloads.length,1);
+    assert.match(h.confirmMessages[0],/PROGRAMACIÓN I/);assert.match(h.confirmMessages[0],/ÁLGEBRA/);assert.match(h.confirmMessages[0],/no podrás corregirlo, rehacerlo/);
+    await attempt(h,'modern');await attempt(h,'final');assert.match(h.confirmMessages.at(-1),/primer informe → INFORME 1; segundo informe → INFORME 2; Informe Final → INFORME FINAL/);
   });
   await test('La página estudiantil no contiene validador, activación ni descargas repetidas',()=>{
     const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),js=fs.readFileSync(path.join(root,'envios.js'),'utf8'),config=fs.readFileSync(path.join(root,'envios-config.js'),'utf8');
     assert.doesNotMatch(html+js+config,/kardex debe activar|webAppUrl|script\.google\.com|verificar\.html|lector-integridad|enviar c[oó]digo|@umsa\.bo/i);
-    assert.match(html,/downloadConfirm/);assert.match(html,/Cancelar|cancelaste/);assert.doesNotMatch(html,/downloadPreparedPdf|preparedReport/);
+    assert.match(html,/downloadConfirm/);assert.match(html,/id="cancelDownloadButton"[^>]*>Volver y corregir/);assert.doesNotMatch(html,/downloadPreparedPdf|preparedReport/);
     assert.match(fs.readFileSync(path.join(root,'envios.css'),'utf8'),/button:disabled\{opacity:\.4/);
   });
   console.log(count+' pruebas de descargas completadas.');

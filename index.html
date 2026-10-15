@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=19.1">
   <link rel="stylesheet" href="print.css?v=19.3">
   <link rel="stylesheet" href="gestion.css?v=8">
-  <link rel="stylesheet" href="envios.css?v=26.0">
+  <link rel="stylesheet" href="envios.css?v=28.0">
   <link rel="stylesheet" href="print-additions.css?v=27.0">
 </head>
 <body>
@@ -128,20 +128,44 @@
     <section id="finalDelivery" class="final-delivery" aria-labelledby="finalDeliveryTitle" hidden>
       <p class="step">05 · Entrega</p><h2 id="finalDeliveryTitle">Entrega los tres PDF en Google</h2>
       <p id="finalDeliveryDescription"></p>
+      <ol class="report-upload-list">
+        <li><strong>Primer informe:</strong> adjunta el PDF que comienza con <strong>INFORME 1</strong>.</li>
+        <li><strong>Segundo informe:</strong> adjunta el PDF que comienza con <strong>INFORME 2</strong>.</li>
+        <li><strong>Informe Final:</strong> adjunta el PDF que comienza con <strong>INFORME FINAL</strong>.</li>
+      </ol>
       <a id="openFinalForm" class="primary" href="#" target="_blank" rel="noopener noreferrer">Abrir formulario de entrega</a>
-      <p class="delivery-note">Abrir el formulario no confirma el envío. Adjunta los archivos y pulsa «Enviar». Puedes volver a abrirlo desde aquí sin descargar otra vez los PDF.</p>
+      <p class="delivery-note">Al terminar de adjuntar los tres archivos, pulsa «Enviar» en Google. Si cierras la pestaña, puedes volver a abrir el formulario desde aquí o desde el botón principal. Si ya respondiste, Google te lo indicará según la restricción de una respuesta configurada en el formulario.</p>
     </section>
     <p id="submissionStatus" class="submission-status" role="status" aria-live="polite"></p>
   </main>
 
   <dialog id="downloadConfirm" class="download-confirm" aria-labelledby="confirmDownloadTitle">
-    <h2 id="confirmDownloadTitle">Revisa tus datos</h2>
-    <p>Comprueba el estudiante, las menciones y las materias seleccionadas antes de continuar.</p>
-    <dl id="confirmStudentFields" class="confirm-student-fields"></dl>
-    <p class="download-warning"><strong>Solo una descarga de este informe en este navegador.</strong> Al iniciarla, el botón quedará deshabilitado. Guarda el PDF y conserva el archivo; el navegador no puede confirmar si lo guardaste o cancelaste la descarga.</p>
-    <p id="confirmFinalNote" class="download-warning" hidden>Después de descargar el informe final se abrirá Google Forms con tus datos. Allí debes adjuntar los tres PDF y confirmar el envío.</p>
-    <label class="confirm-reviewed"><input id="confirmReviewed" type="checkbox">He revisado los datos y quiero iniciar esta descarga única.</label>
-    <div class="confirm-actions"><button id="cancelDownloadButton" class="ghost" type="button">Volver y corregir</button><button id="confirmDownloadButton" class="primary" type="button" disabled>Sí, descargar una vez</button></div>
+    <header class="confirm-heading">
+      <h2 id="confirmDownloadTitle">Revisa tus datos</h2>
+      <p>Comprueba tus datos, las menciones y cada materia antes de descargar.</p>
+    </header>
+    <div id="confirmScroll" class="confirm-scroll" tabindex="0" role="region" aria-label="Datos y materias del informe">
+      <dl id="confirmStudentFields" class="confirm-student-fields"></dl>
+      <section class="confirm-courses" aria-labelledby="confirmCoursesTitle">
+        <h3 id="confirmCoursesTitle">Materias que se incluirán en el PDF</h3>
+        <p>Revisa las siglas, los nombres y sus equivalencias. Esta es la tabla de tu informe.</p>
+        <div id="confirmCourseTable" class="confirm-course-table-wrap" tabindex="0" role="region" aria-label="Tabla de materias; desplaza horizontalmente si es necesario"></div>
+      </section>
+    </div>
+    <footer class="confirm-footer">
+      <p id="confirmDownloadWarning" class="download-warning"><strong>Revisa bien tus datos y materias antes de descargar.</strong> Debes subir este mismo PDF al formulario. Al iniciar la descarga, este informe quedará bloqueado en este navegador: no podrás corregirlo, rehacerlo ni descargarlo otra vez aquí. Guarda y conserva el archivo; cancelar el guardado no quita el bloqueo.</p>
+      <div id="confirmFinalNote" class="download-warning" hidden>
+        <p><strong>Entrega de los tres informes.</strong> Se abrirá Google Forms con tus datos. Adjunta cada PDF en su casilla:</p>
+        <ol class="report-upload-list">
+          <li><strong>Primer informe → INFORME 1.</strong></li>
+          <li><strong>Segundo informe → INFORME 2.</strong></li>
+          <li><strong>Informe Final → INFORME FINAL.</strong></li>
+        </ol>
+        <p>Después pulsa <strong>«Enviar»</strong> en Google.</p>
+      </div>
+      <label class="confirm-reviewed"><input id="confirmReviewed" type="checkbox" aria-describedby="confirmDownloadWarning">He revisado mis datos y materias. Entiendo que debo conservar este PDF para subirlo al formulario.</label>
+      <div class="confirm-actions"><button id="cancelDownloadButton" class="ghost" type="button">Volver y corregir</button><button id="confirmDownloadButton" class="primary" type="button" disabled>Sí, descargar una vez</button></div>
+    </footer>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -178,14 +202,14 @@
   <script src="data.js?v=19.3"></script>
   <script src="app.js?v=24.0"></script>
   <script src="gestion-data.js?v=1"></script>
-  <script src="gestion.js?v=26.0"></script>
+  <script src="gestion.js?v=28.0"></script>
   <script src="envios-config.js?v=24.0"></script>
   <script src="form-links.js?v=24.0"></script>
   <script src="assets/vendor/pdf-lib.min.js"></script>
   <script src="report-assets.js?v=27.0"></script>
   <script src="report-pdf.js?v=27.0"></script>
   <script src="download-ledger.js?v=26.0"></script>
-  <script src="envios.js?v=26.0"></script>
+  <script src="envios.js?v=28.0"></script>
   <script src="assets/vendor/tesseract.min.js"></script>
   <script type="module" src="history-reader.mjs?v=19.6"></script>
 </body>

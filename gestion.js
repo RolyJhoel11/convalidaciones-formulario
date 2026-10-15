@@ -137,16 +137,19 @@
     const visible = mode === '2023' ? Object.entries(labels) : [['old',labels.old]];
     pdfMenu.innerHTML = visible.map(([type,label]) => {
       const downloaded = window.ReportSubmission?.isDownloaded(type);
+      if (type === 'final' && downloaded && window.ReportSubmission?.canOpenFinalForm?.()) {
+        return '<button type="button" data-report="final" data-action="open-form">Abrir formulario de entrega</button>';
+      }
       const allowed = window.ReportSubmission ? window.ReportSubmission.canDownload(type) : true;
       const suffix = downloaded ? ' · Descarga bloqueada' : (type === 'final' && !allowed ? ' · Primero descarga los informes 1 y 2' : '');
       return `<button type="button" data-report="${type}" ${!allowed ? 'disabled' : ''}>${label}${suffix}</button>`;
     }).join('');
     if (window.ReportSubmission && !document.querySelector('main').inert) {
+      const reopen = window.ReportSubmission.canOpenFinalForm?.();
       const available = visible.some(([type]) => window.ReportSubmission.canDownload(type));
-      $('pdfButton').disabled = !available;
-      $('pdfButton').textContent = available ? 'Generar y descargar PDF' :
+      $('pdfButton').disabled = !available && !reopen;
+      $('pdfButton').textContent = reopen ? 'Abrir formulario de entrega' : available ? 'Generar y descargar PDF' :
         (mode === '1998' && window.ReportSubmission.isDownloaded('old') ? 'Informe 1 descargado' : 'Descargas bloqueadas');
-      if (['old','modern','final'].every(type => window.ReportSubmission.isDownloaded(type))) $('pdfButton').textContent = 'Descargas completadas';
     }
   }
   window.addEventListener('downloads:updated',updatePdfMenu);
@@ -163,6 +166,9 @@
   $('pdfButton').addEventListener('click', event => {
     event.stopImmediatePropagation();
     updatePdfMenu();
+    if (window.ReportSubmission?.canOpenFinalForm?.()) {
+      closePdfMenu();window.ReportSubmission.openFinalForm();return;
+    }
     pdfMenu.hidden = !pdfMenu.hidden;
     $('pdfButton').setAttribute('aria-expanded', String(!pdfMenu.hidden));
     if (!pdfMenu.hidden) { positionPdfMenu(); pdfMenu.querySelector('button')?.focus(); }
@@ -171,7 +177,10 @@
     const button = event.target.closest('button[data-report]');
     if (!button) return;
     closePdfMenu();
-    if (!button.disabled) window.ReportSubmission?.submit(button.dataset.report);
+    if (!button.disabled) {
+      if (button.dataset.action === 'open-form') window.ReportSubmission?.openFinalForm();
+      else window.ReportSubmission?.submit(button.dataset.report);
+    }
   });
   document.addEventListener('click', event => {
     if (!pdfMenu.contains(event.target) && !$('pdfButton').contains(event.target)) closePdfMenu();

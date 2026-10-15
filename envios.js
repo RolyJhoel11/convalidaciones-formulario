@@ -8,6 +8,19 @@
   function studentData(){return {email:links.normalizeEmail($('studentEmail').value),name:state.name.trim(),ci:state.ci.trim(),ru:state.ru.trim(),oldMention:state.oldMention,oldMentionName:OLD_MENTIONS[state.oldMention],career:state.career,careerName:DATA[state.career]?.name};}
   function setBusy(value){busy=value;document.querySelector('main').inert=value;document.querySelector('main').setAttribute('aria-busy',String(value));$('pdfButton').disabled=value;}
   function read(){try{return ledger.read();}catch(error){storageProblem=error.message;message(error.message,'error');return {profile:null,reports:{}};}}
+  function canOpenFinalForm(){
+    const data=read();
+    if(storageProblem||!data.reports.final||!data.profile)return false;
+    try{return Boolean(links.build(data.profile,config));}catch(_){return false;}
+  }
+  function openFinalForm(){
+    if(busy||!canOpenFinalForm())return false;
+    try{
+      const data=read(),link=$('openFinalForm');link.href=links.build(data.profile,config);link.click();
+      message('Puedes continuar la entrega en Google Forms. Adjunta cada PDF en su casilla y pulsa «Enviar». Si ya respondiste, Google te lo indicará según la configuración del formulario.');
+      return true;
+    }catch(error){message(error.message||'No se pudo abrir el formulario. Usa el enlace de entrega que aparece abajo.','error');return false;}
+  }
   function refresh(){
     const data=read(),holder=$('downloadStates');holder.replaceChildren();
     for(const [type,label]of Object.entries(LABELS)){
@@ -20,12 +33,13 @@
       $('lockedDataNote').hidden=false;
     }
     const all=Object.keys(LABELS).every(type=>data.reports[type]);
-    $('pdfButton').disabled=busy||Boolean(storageProblem)||all;
-    $('pdfButton').textContent=all?'Descargas completadas':'Generar y descargar PDF';
+    const reopen=canOpenFinalForm();
+    $('pdfButton').disabled=busy||Boolean(storageProblem)||(all&&!reopen);
+    $('pdfButton').textContent=reopen?'Abrir formulario de entrega':all?'Descargas completadas':'Generar y descargar PDF';
     $('finalDelivery').hidden=!data.reports.final;
     if(data.reports.final){
       try{$('openFinalForm').href=links.build(data.profile,config);}catch(error){message(error.message,'error');}
-      $('finalDeliveryDescription').textContent='Adjunta los tres PDF que guardaste: Informe 1, Informe 2 e INFORME FINAL. Tus datos se abrirán prellenados. El envío se confirma cuando pulses «Enviar» en Google.';
+      $('finalDeliveryDescription').textContent='Usa los mismos tres PDF que descargaste del sistema. Tus datos se abrirán prellenados. En cada pregunta de Google Forms pulsa «Añadir archivo» y elige el informe correspondiente:';
     }
     window.dispatchEvent(new CustomEvent('downloads:updated'));
   }
@@ -33,15 +47,25 @@
     const resolve=confirmation;if(!resolve)return;confirmation=null;
     if($('downloadConfirm').open)$('downloadConfirm').close();resolve(accepted);
   }
-  function confirmReport(type,student,count){
+  function confirmReport(type,student,snapshot){
+    const count=snapshot.count;
     const dialog=$('downloadConfirm'),fields=$('confirmStudentFields');fields.replaceChildren();
     for(const [label,value]of [['Informe',LABELS[type]],['Apellidos y nombres',student.name],['Correo FCPN',student.email],['CI',student.ci],['RU',student.ru],['Mención 1998',student.oldMentionName],['Mención de destino',student.careerName],['Materias convalidadas',count]]){
       const row=document.createElement('div'),term=document.createElement('dt'),description=document.createElement('dd');term.textContent=label;description.textContent=String(value);row.append(term,description);fields.append(row);
     }
+    const original=snapshot.view.querySelector('table');
+    if(!original)throw new Error('No se pudo preparar la lista de materias. Vuelve a intentar antes de descargar.');
+    const table=original.cloneNode(true);
+    for(const node of table.querySelectorAll('[id]'))node.removeAttribute('id');
+    table.className='confirm-course-table';table.dataset.plans=table.querySelectorAll('col').length===4?'2':'3';$('confirmCourseTable').replaceChildren(table);
     $('confirmDownloadTitle').textContent='Revisa los datos de '+LABELS[type];$('confirmReviewed').checked=false;$('confirmDownloadButton').disabled=true;
     $('confirmFinalNote').hidden=type!=='final';
-    if(typeof dialog.showModal!=='function')return Promise.resolve(window.confirm(LABELS[type]+'\n'+student.name+'\nCI: '+student.ci+' · RU: '+student.ru+'\n'+student.email+'\n'+student.oldMentionName+' → '+student.careerName+'\nMaterias: '+count+'\n\n¿Confirmas que revisaste los datos? Esta descarga se bloqueará en este navegador al iniciarse. Guarda el archivo.'));
-    return new Promise(resolve=>{confirmation=resolve;dialog.showModal();$('cancelDownloadButton').focus();});
+    if(typeof dialog.showModal!=='function'){
+      const courses=[...original.rows].map(row=>[...row.cells].map(cell=>cell.textContent.trim()).join(' | ')).join('\n');
+      const delivery=type==='final'?'\n\nEn Google Forms: primer informe → INFORME 1; segundo informe → INFORME 2; Informe Final → INFORME FINAL. Luego pulsa Enviar.':'';
+      return Promise.resolve(window.confirm(LABELS[type]+'\n'+student.name+'\nCI: '+student.ci+' · RU: '+student.ru+'\n'+student.email+'\n'+student.oldMentionName+' → '+student.careerName+'\nMaterias convalidadas: '+count+'\n\n'+courses+'\n\nRevisa todo antes de continuar. Este es el PDF que debes subir al formulario. Al iniciar la descarga, no podrás corregirlo, rehacerlo ni descargarlo otra vez en este navegador. Guarda el archivo.'+delivery+'\n\n¿Confirmas que revisaste tus datos y materias?'));
+    }
+    return new Promise(resolve=>{confirmation=resolve;dialog.showModal();$('confirmScroll').scrollTop=0;$('confirmScroll').focus();});
   }
   function waitingWindow(){
     let popup=null;try{popup=window.open('about:blank','_blank');if(popup){popup.opener=null;popup.document.title='Preparando entrega de informes';popup.document.documentElement.lang='es';popup.document.body.textContent='Preparando el informe final. El formulario de entrega se abrirá con tus datos cuando empiece la descarga.';}}catch(_){}return popup;
@@ -73,7 +97,7 @@
       ledger.ensure();student=studentData();ledger.check(type,student);
       if(!buildPrintView(type))return;
       snapshot=window.ReportPdf.capture(type,student);setBusy(true);
-      const confirmed=await confirmReport(type,student,snapshot.count);if(!confirmed)return;
+      const confirmed=await confirmReport(type,student,snapshot);if(!confirmed)return;
       // Esta llamada sigue al clic de confirmación, antes de esperas asíncronas.
       const formUrl=type==='final'?links.build(student,config):null;
       if(type==='final')popup=waitingWindow();
@@ -110,6 +134,6 @@
   window.addEventListener('convalidaciones:rendered',()=>{const profile=read().profile;if(profile)for(const id of Object.values(FIELDS))$(id).disabled=true;});
   window.ReportSubmission=Object.freeze({submit,isDownloaded:type=>Boolean(read().reports[type]),canDownload:type=>{
     const data=read();return Object.prototype.hasOwnProperty.call(LABELS,type)&&!storageProblem&&!data.reports[type]&&(type!=='final'||Boolean(data.reports.old&&data.reports.modern));
-  },lockedProfile:()=>read().profile});
+  },lockedProfile:()=>read().profile,canOpenFinalForm,openFinalForm});
   refresh();if(read().profile){saveState();render();}
 })();
